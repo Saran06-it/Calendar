@@ -3,7 +3,11 @@ import './Calendar.css'
 import { useState } from 'react'
 
 const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
+type Task = {
+  id: string
+  title: string
+  date: number
+}
 export default function Calendar() {
   
 
@@ -19,7 +23,26 @@ export default function Calendar() {
         new Date(current.getFullYear(), current.getMonth() + offset, 1),
     )
 }
+    const [tasks, setTasks] = useState<Task[]>([])
+    const [taskTitle, setTaskTitle] = useState('')
 
+    const selectedDay = selectedDate?.getTime()
+    const tasksForSelectedDay = tasks.filter((task) => task.date === selectedDay)
+
+    function addTask() {
+    const title = taskTitle.trim()
+
+    if (selectedDay === undefined || title === '') return
+
+    const task: Task = {
+        id: crypto.randomUUID(),
+        title,
+        date: selectedDay,
+    }
+
+    setTasks((currentTasks) => [...currentTasks, task])
+    setTaskTitle('')
+    }
   return (
 
     <section>
@@ -42,21 +65,53 @@ export default function Calendar() {
             {leadingCells.map((_, index) => (
                 <div key={`empty-${index}`} aria-hidden="true" />
             ))}
-            {days.map((day) => (
-            <button
+            {days.map((day) => {
+            const isSelected =
+                selectedDate !== null &&
+                selectedDate.getFullYear() === year &&
+                selectedDate.getMonth() === monthIndex &&
+                selectedDate.getDate() === day
+
+            return (
+                <button
                 key={day}
                 type="button"
+                aria-pressed={isSelected}
                 onClick={() => setSelectedDate(new Date(year, monthIndex, day))}
-            >
+                >
                 {day}
-            </button>
-            ))}
+                </button>
+            )
+            })}
         </div>
         <p>
         {selectedDate
             ? `Selected: ${selectedDate.toLocaleDateString('en-GB')}`
             : 'Select a date'}
         </p>
+        {selectedDate && (
+        <form
+            onSubmit={(event) => {
+            event.preventDefault()
+            addTask()
+            }}
+        >
+            <label>
+            Task name
+            <input
+                value={taskTitle}
+                onChange={(event) => setTaskTitle(event.target.value)}
+            />
+            </label>
+            <button type="submit">Add task</button>
+        </form>
+        )}
+
+        <ul>
+        {tasksForSelectedDay.map((task) => (
+            <li key={task.id}>{task.title}</li>
+        ))}
+        </ul>
     </section>
   )
 }
