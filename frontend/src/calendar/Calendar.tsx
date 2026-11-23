@@ -8,6 +8,7 @@ export default function Calendar() {
   
 
   const [visibleMonth, setVisibleMonth] = useState(() => new Date(2026, 10, 1))
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const year = visibleMonth.getFullYear()
   const monthIndex = visibleMonth.getMonth()
   const { leadingCount, dayCount } = getMonthLayout(year, monthIndex + 1)
@@ -41,11 +42,21 @@ export default function Calendar() {
             {leadingCells.map((_, index) => (
                 <div key={`empty-${index}`} aria-hidden="true" />
             ))}
-
             {days.map((day) => (
-                <div key={day}>{day}</div>
+            <button
+                key={day}
+                type="button"
+                onClick={() => setSelectedDate(new Date(year, monthIndex, day))}
+            >
+                {day}
+            </button>
             ))}
         </div>
+        <p>
+        {selectedDate
+            ? `Selected: ${selectedDate.toLocaleDateString('en-GB')}`
+            : 'Select a date'}
+        </p>
     </section>
   )
 }
