@@ -58,6 +58,18 @@ export default function Calendar() {
         currentTasks.filter((task) => task.id !== id),
     )
     }
+    function editTask(task: Task) {
+
+        const input = window.prompt('Edit task name', task.title)
+        if (input === null) return
+        const title = input.trim()
+        if (title === '') return
+        setTasks((currentTasks) =>
+            currentTasks.map((item) =>
+            item.id === task.id ? { ...item, title } : item,
+            ),
+        )
+    }
   return (
 
     <section>
@@ -135,6 +147,9 @@ export default function Calendar() {
             </label>
             <button type="button" onClick={() => deleteTask(task.id)}>
                 Delete
+            </button>
+            <button type="button" onClick={() => editTask(task)}>
+                Edit
             </button>
             </li>
         ))}
