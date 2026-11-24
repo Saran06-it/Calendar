@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 
 const tasksFile = new URL('../data/tasks.json', import.meta.url)
 
@@ -13,4 +13,14 @@ export async function readTasksFile() {
 
     throw error
   }
+}
+export async function writeTasksFile(tasks: unknown[]) {
+  const dataDirectory = new URL('./', tasksFile)
+  const temporaryFile = new URL('tasks.json.tmp', dataDirectory)
+
+  await mkdir(dataDirectory, { recursive: true })
+
+  const text = JSON.stringify(tasks, null, 2)
+  await writeFile(temporaryFile, text, 'utf8')
+  await rename(temporaryFile, tasksFile)
 }

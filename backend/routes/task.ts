@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import type { FastifyInstance } from 'fastify'
+import { readTasksFile, writeTasksFile } from '../storage/tasks.ts'
 
 type NewTask = {
   title: string
@@ -12,7 +13,14 @@ type Task = NewTask & {
 }
 
 export default async function taskRoutes(server: FastifyInstance) {
-  const tasks: Task[] = []
+  const savedTasks: unknown = await readTasksFile()
+
+    if (!Array.isArray(savedTasks)) {
+    throw new Error('tasks.json must contain an array')
+    }
+
+    let tasks: Task[] = savedTasks
+    let writeQueue = Promise.resolve()
 
   server.get('/api/tasks', async () => {
     return tasks
@@ -32,7 +40,14 @@ export default async function taskRoutes(server: FastifyInstance) {
       completed: false,
     }
 
-    tasks.push(task)
+    const save = writeQueue.then(async () => {
+    const nextTasks = [...tasks, task]
+    await writeTasksFile(nextTasks)
+    tasks = nextTasks
+    })
+
+    writeQueue = save.catch(() => {})
+    await save
     return reply.code(201).send(task)
   })
 }
