@@ -7,6 +7,7 @@ type Task = {
   id: string
   title: string
   date: number
+  completed: boolean
 }
 export default function Calendar() {
   
@@ -30,18 +31,32 @@ export default function Calendar() {
     const tasksForSelectedDay = tasks.filter((task) => task.date === selectedDay)
 
     function addTask() {
-    const title = taskTitle.trim()
-
-    if (selectedDay === undefined || title === '') return
-
-    const task: Task = {
-        id: crypto.randomUUID(),
-        title,
-        date: selectedDay,
+        const title = taskTitle.trim()
+        if (selectedDay === undefined || title === '') return
+        const task: Task = {
+            id: crypto.randomUUID(),
+            title,
+            date: selectedDay,
+            completed: false,
+        }
+        setTasks((currentTasks) => [...currentTasks, task])
+        setTaskTitle('')
     }
+    function toggleTask(id: string) {
+        setTasks((currentTasks) =>
+            currentTasks.map((task) =>
+            task.id === id ? { ...task, completed: !task.completed } : task,
+            ),
+        )
+    }
+    function deleteTask(id: string) {
+    const confirmed = window.confirm('Delete this task?')
 
-    setTasks((currentTasks) => [...currentTasks, task])
-    setTaskTitle('')
+    if (!confirmed) return
+
+    setTasks((currentTasks) =>
+        currentTasks.filter((task) => task.id !== id),
+    )
     }
   return (
 
@@ -109,7 +124,19 @@ export default function Calendar() {
 
         <ul>
         {tasksForSelectedDay.map((task) => (
-            <li key={task.id}>{task.title}</li>
+            <li key={task.id}>
+            <label>
+                <input
+                type="checkbox"
+                checked={task.completed}
+                onChange={() => toggleTask(task.id)}
+                />
+                {task.title}
+            </label>
+            <button type="button" onClick={() => deleteTask(task.id)}>
+                Delete
+            </button>
+            </li>
         ))}
         </ul>
     </section>
